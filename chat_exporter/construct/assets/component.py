@@ -50,23 +50,27 @@ class Component:
         icon = DiscordUtils.button_external_link if url else ""
         emoji = str(c.emoji) if c.emoji else ""
 
-        self.buttons += await fill_out(self.guild, component_button, [
-            ("DISABLED", "chatlog__component-disabled" if c.disabled else "", PARSE_MODE_NONE),
-            ("URL", str(url), PARSE_MODE_NONE),
-            ("LABEL", str(label), PARSE_MODE_MARKDOWN),
-            ("EMOJI", str(emoji), PARSE_MODE_EMOJI),
-            ("ICON", str(icon), PARSE_MODE_NONE),
-            ("STYLE", style, PARSE_MODE_NONE)
-        ])
+        self.buttons += await fill_out(
+            self.guild,
+            component_button,
+            [
+                (
+                    "DISABLED",
+                    "chatlog__component-disabled" if c.disabled else "",
+                    PARSE_MODE_NONE,
+                ),
+                ("URL", str(url), PARSE_MODE_NONE),
+                ("LABEL", str(label), PARSE_MODE_MARKDOWN),
+                ("EMOJI", emoji, PARSE_MODE_EMOJI),
+                ("ICON", str(icon), PARSE_MODE_NONE),
+                ("STYLE", style, PARSE_MODE_NONE),
+            ],
+        )
 
     async def build_menu(self, c):
         placeholder = c.placeholder if c.placeholder else ""
         options = c.options
-        content = ""
-
-        if not c.disabled:
-            content = await self.build_menu_options(options)
-
+        content = await self.build_menu_options(options) if not c.disabled else ""
         self.menus += await fill_out(self.guild, component_menu, [
             ("DISABLED", "chatlog__component-disabled" if c.disabled else "", PARSE_MODE_NONE),
             ("ID", str(self.menu_div_id), PARSE_MODE_NONE),

@@ -1,4 +1,2 @@
 async def discriminator(user: str, discriminator: str):
-    if discriminator != "0":
-        return f"{user}#{discriminator}"
-    return user
+    return f"{user}#{discriminator}" if discriminator != "0" else user
