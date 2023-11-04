@@ -59,7 +59,7 @@ class ParseMarkdown:
             [r"<a:.*?:(\d*)>", '<img class="emoji emoji--small" src="https://cdn.discordapp.com/emojis/%s.gif">'],
         )
 
-        self.content = await convert_emoji([word for word in self.content])
+        self.content = await convert_emoji(list(self.content))
 
         for x in holder:
             p, r = x
@@ -89,8 +89,7 @@ class ParseMarkdown:
         started = True
 
         for line in lines:
-            match = re.match(r'^(\s*)([-*])\s+(.+)$', line)
-            if match:
+            if match := re.match(r'^(\s*)([-*])\s+(.+)$', line):
                 indent, bullet, content = match.groups()
                 indent = len(indent)
 
@@ -162,19 +161,19 @@ class ParseMarkdown:
 
         for x in self.content:
             if re.search(pattern, x) and y:
-                y = y + "<br>" + x[5:]
+                y = f"{y}<br>{x[5:]}"
             elif not y:
                 if re.search(pattern, x):
                     y = x[5:]
                 else:
                     new_content = new_content + x + "<br>"
             else:
-                new_content = new_content + f'<div class="quote">{y}</div>'
+                new_content = f'{new_content}<div class="quote">{y}</div>'
                 new_content = new_content + x
                 y = ""
 
         if y:
-            new_content = new_content + f'<div class="quote">{y}</div>'
+            new_content = f'{new_content}<div class="quote">{y}</div>'
 
         self.content = new_content
 
@@ -207,13 +206,13 @@ class ParseMarkdown:
 
             if not reference:
                 self.content = self.content.replace(
-                    self.content[match.start():match.end()],
-                    '<div class="pre pre--multiline %s">%s</div>' % (language_class, affected_text)
+                    self.content[match.start() : match.end()],
+                    f'<div class="pre pre--multiline {language_class}">{affected_text}</div>',
                 )
             else:
                 self.content = self.content.replace(
-                    self.content[match.start():match.end()],
-                    '<span class="pre pre-inline">%s</span>' % affected_text
+                    self.content[match.start() : match.end()],
+                    f'<span class="pre pre-inline">{affected_text}</span>',
                 )
 
             match = re.search(pattern, self.content)
@@ -224,8 +223,10 @@ class ParseMarkdown:
         while match is not None:
             affected_text = match.group(1)
             affected_text = self.return_to_markdown(affected_text)
-            self.content = self.content.replace(self.content[match.start():match.end()],
-                                                '<span class="pre pre-inline">%s</span>' % affected_text)
+            self.content = self.content.replace(
+                self.content[match.start() : match.end()],
+                f'<span class="pre pre-inline">{affected_text}</span>',
+            )
             match = re.search(pattern, self.content)
 
         # `code`
@@ -234,8 +235,10 @@ class ParseMarkdown:
         while match is not None:
             affected_text = match.group(1)
             affected_text = self.return_to_markdown(affected_text)
-            self.content = self.content.replace(self.content[match.start():match.end()],
-                                                '<span class="pre pre-inline">%s</span>' % affected_text)
+            self.content = self.content.replace(
+                self.content[match.start() : match.end()],
+                f'<span class="pre pre-inline">{affected_text}</span>',
+            )
             match = re.search(pattern, self.content)
 
         self.content = re.sub(r"<br>", "\n", self.content)
@@ -247,8 +250,10 @@ class ParseMarkdown:
         while match is not None:
             affected_text = match.group(1)
             affected_url = match.group(2)
-            self.content = self.content.replace(self.content[match.start():match.end()],
-                                                '<a href="%s">%s</a>' % (affected_url, affected_text))
+            self.content = self.content.replace(
+                self.content[match.start() : match.end()],
+                f'<a href="{affected_url}">{affected_text}</a>',
+            )
             match = re.search(pattern, self.content)
 
         self.content = self.content.split("\n")
@@ -272,12 +277,12 @@ class ParseMarkdown:
                 else:
                     new_content = new_content + x + "\n"
             else:
-                new_content = new_content + f'<div class="quote">{y}</div>'
+                new_content = f'{new_content}<div class="quote">{y}</div>'
                 new_content = new_content + x
                 y = ""
 
         if y:
-            new_content = new_content + f'<div class="quote">{y}</div>'
+            new_content = f'{new_content}<div class="quote">{y}</div>'
 
         self.content = new_content
 
@@ -296,8 +301,7 @@ class ParseMarkdown:
             elif "</ul>" in line:
                 ul_level -= 1
             elif '<li class="markup">' in line:
-                match = re.match(r'<li class="markup">(.+?)</li>', line)
-                if match:
+                if match := re.match(r'<li class="markup">(.+?)</li>', line):
                     matched_content = match.group(1)
                     spaces = ul_level * 2
                     html += " " * spaces + "-" + matched_content + "\n"
@@ -341,11 +345,14 @@ class ParseMarkdown:
             affected_url = match.group(1)
             affected_text = match.group(2)
             if affected_url != affected_text:
-                content = content.replace(content[match.start():match.end()],
-                                          '[%s](%s)' % (affected_text, affected_url))
+                content = content.replace(
+                    content[match.start() : match.end()],
+                    f'[{affected_text}]({affected_url})',
+                )
             else:
-                content = content.replace(content[match.start():match.end()],
-                                          '%s' % affected_url)
+                content = content.replace(
+                    content[match.start() : match.end()], f'{affected_url}'
+                )
             match = re.search(pattern, content)
 
         return content.lstrip().rstrip()
@@ -372,8 +379,8 @@ class ParseMarkdown:
                     pattern = r"&lt;https?:\/\/(.*)&gt;"
                     match_url = re.search(pattern, word).group(1)
                     url = f'<a href="https://{match_url}">https://{match_url}</a>'
-                    word = word.replace("https://" + match_url, url)
-                    word = word.replace("http://" + match_url, url)
+                    word = word.replace(f"https://{match_url}", url)
+                    word = word.replace(f"http://{match_url}", url)
                     output.append(remove_silent_link(word, match_url))
                 elif "https://" in word:
                     pattern = r"https://[^\s>`\"*]*"

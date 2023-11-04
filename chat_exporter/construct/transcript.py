@@ -75,6 +75,7 @@ class TranscriptDAO:
         time_now = datetime.datetime.now(timezone).strftime("%e %B %Y at %T (%Z)")
 
         meta_data_html: str = ""
+        pattern = r'^#\d{4}'
         for data in meta_data:
             creation_time = meta_data[int(data)][1].astimezone(timezone).strftime("%b %d, %Y")
             joined_time = (
@@ -82,7 +83,6 @@ class TranscriptDAO:
                 if meta_data[int(data)][5] else "Unknown"
             )
 
-            pattern = r'^#\d{4}'
             discrim = str(meta_data[int(data)][0][-5:])
             user = str(meta_data[int(data)][0])
 
@@ -113,10 +113,7 @@ class TranscriptDAO:
                 ("CHANNEL_TOPIC", html.escape(raw_channel_topic))
             ])
 
-        limit = "start"
-        if self.limit:
-            limit = f"latest {self.limit} messages"
-
+        limit = f"latest {self.limit} messages" if self.limit else "start"
         subject = await fill_out(self.channel.guild, channel_subject, [
             ("LIMIT", limit, PARSE_MODE_NONE),
             ("CHANNEL_NAME", self.channel.name),
@@ -136,23 +133,31 @@ class TranscriptDAO:
                 ("TIMEZONE", str(self.pytz_timezone), PARSE_MODE_NONE)
             ])
 
-        self.html = await fill_out(self.channel.guild, total, [
-            ("SERVER_NAME", f"{guild_name}"),
-            ("GUILD_ID", str(self.channel.guild.id), PARSE_MODE_NONE),
-            ("SERVER_AVATAR_URL", str(guild_icon), PARSE_MODE_NONE),
-            ("CHANNEL_NAME", f"{self.channel.name}"),
-            ("MESSAGE_COUNT", str(len(self.messages))),
-            ("MESSAGES", message_html, PARSE_MODE_NONE),
-            ("META_DATA", meta_data_html, PARSE_MODE_NONE),
-            ("DATE_TIME", str(time_now)),
-            ("SUBJECT", subject, PARSE_MODE_NONE),
-            ("CHANNEL_CREATED_AT", str(channel_creation_time), PARSE_MODE_NONE),
-            ("CHANNEL_TOPIC", str(channel_topic_html), PARSE_MODE_NONE),
-            ("CHANNEL_ID", str(self.channel.id), PARSE_MODE_NONE),
-            ("MESSAGE_PARTICIPANTS", str(len(meta_data)), PARSE_MODE_NONE),
-            ("FANCY_TIME", _fancy_time, PARSE_MODE_NONE),
-            ("SD", sd, PARSE_MODE_NONE)
-        ])
+        self.html = await fill_out(
+            self.channel.guild,
+            total,
+            [
+                ("SERVER_NAME", f"{guild_name}"),
+                ("GUILD_ID", str(self.channel.guild.id), PARSE_MODE_NONE),
+                ("SERVER_AVATAR_URL", str(guild_icon), PARSE_MODE_NONE),
+                ("CHANNEL_NAME", f"{self.channel.name}"),
+                ("MESSAGE_COUNT", str(len(self.messages))),
+                ("MESSAGES", message_html, PARSE_MODE_NONE),
+                ("META_DATA", meta_data_html, PARSE_MODE_NONE),
+                ("DATE_TIME", time_now),
+                ("SUBJECT", subject, PARSE_MODE_NONE),
+                (
+                    "CHANNEL_CREATED_AT",
+                    str(channel_creation_time),
+                    PARSE_MODE_NONE,
+                ),
+                ("CHANNEL_TOPIC", str(channel_topic_html), PARSE_MODE_NONE),
+                ("CHANNEL_ID", str(self.channel.id), PARSE_MODE_NONE),
+                ("MESSAGE_PARTICIPANTS", str(len(meta_data)), PARSE_MODE_NONE),
+                ("FANCY_TIME", _fancy_time, PARSE_MODE_NONE),
+                ("SD", sd, PARSE_MODE_NONE),
+            ],
+        )
 
 
 class Transcript(TranscriptDAO):

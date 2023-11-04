@@ -32,10 +32,8 @@ from chat_exporter.ext.html_generator import (
 
 
 def _gather_user_bot(author: discord.Member):
-    if author.bot and author.public_flags.verified_bot:
-        return bot_tag_verified
-    elif author.bot:
-        return bot_tag
+    if author.bot:
+        return bot_tag_verified if author.public_flags.verified_bot else bot_tag
     return ""
 
 
@@ -175,7 +173,7 @@ class MessageConstruct:
 
         if not message.content and not message.interaction:
             message.content = "Click to see attachment"
-        elif not message.content and message.interaction:
+        elif not message.content:
             message.content = "Click to see command"
 
         icon = ""
@@ -212,17 +210,29 @@ class MessageConstruct:
         is_bot = _gather_user_bot(user)
         user_colour = await self._gather_user_colour(user)
         avatar_url = user.display_avatar if user.display_avatar else DiscordUtils.default_avatar
-        self.message.interaction = await fill_out(self.guild, message_interaction, [
-            ("AVATAR_URL", str(avatar_url), PARSE_MODE_NONE),
-            ("BOT_TAG", is_bot, PARSE_MODE_NONE),
-            ("NAME_TAG", await discriminator(user.name, user.discriminator), PARSE_MODE_NONE),
-            ("NAME", str(html.escape(user.display_name))),
-            ("USER_COLOUR", user_colour, PARSE_MODE_NONE),
-            ("FILLER", "used ", PARSE_MODE_NONE),
-            ("COMMAND", "/" + self.message.interaction.name, PARSE_MODE_NONE),
-            ("USER_ID", str(user.id), PARSE_MODE_NONE),
-            ("INTERACTION_ID", str(self.message.interaction.id), PARSE_MODE_NONE),
-        ])
+        self.message.interaction = await fill_out(
+            self.guild,
+            message_interaction,
+            [
+                ("AVATAR_URL", str(avatar_url), PARSE_MODE_NONE),
+                ("BOT_TAG", is_bot, PARSE_MODE_NONE),
+                (
+                    "NAME_TAG",
+                    await discriminator(user.name, user.discriminator),
+                    PARSE_MODE_NONE,
+                ),
+                ("NAME", str(html.escape(user.display_name))),
+                ("USER_COLOUR", user_colour, PARSE_MODE_NONE),
+                ("FILLER", "used ", PARSE_MODE_NONE),
+                ("COMMAND", f"/{self.message.interaction.name}", PARSE_MODE_NONE),
+                ("USER_ID", str(user.id), PARSE_MODE_NONE),
+                (
+                    "INTERACTION_ID",
+                    str(self.message.interaction.id),
+                    PARSE_MODE_NONE,
+                ),
+            ],
+        )
 
     async def build_sticker(self):
         if not self.message.stickers or not hasattr(self.message.stickers[0], "url"):
@@ -277,57 +287,62 @@ class MessageConstruct:
         return self.message_html
 
     def _generate_message_divider_check(self):
-        return bool(
-            self.previous_message is None or self.message.reference != "" or
-            self.previous_message.type is not discord.MessageType.default or self.message.interaction != "" or
-            self.previous_message.author.id != self.message.author.id or self.message.webhook_id is not None or
-            self.message.created_at > (self.previous_message.created_at + timedelta(minutes=4))
+        return (
+            self.previous_message is None
+            or self.message.reference != ""
+            or self.previous_message.type is not discord.MessageType.default
+            or self.message.interaction != ""
+            or self.previous_message.author.id != self.message.author.id
+            or self.message.webhook_id is not None
+            or self.message.created_at
+            > (self.previous_message.created_at + timedelta(minutes=4))
         )
 
     async def generate_message_divider(self, channel_audit=False):
-        if channel_audit or self._generate_message_divider_check():
-            if self.previous_message is not None:
-                self.message_html += await fill_out(self.guild, end_message, [])
+        if not channel_audit and not self._generate_message_divider_check():
+            return
+        if self.previous_message is not None:
+            self.message_html += await fill_out(self.guild, end_message, [])
 
-            if channel_audit:
-                self.audit = True
-                return
+        if channel_audit:
+            self.audit = True
+            return
 
-            followup_symbol = ""
-            is_bot = _gather_user_bot(self.message.author)
-            avatar_url = self.message.author.display_avatar if self.message.author.display_avatar else DiscordUtils.default_avatar
+        followup_symbol = ""
+        is_bot = _gather_user_bot(self.message.author)
+        avatar_url = self.message.author.display_avatar if self.message.author.display_avatar else DiscordUtils.default_avatar
 
-            if self.message.reference != "" or self.message.interaction:
-                followup_symbol = "<div class='chatlog__followup-symbol'></div>"
+        if self.message.reference != "" or self.message.interaction:
+            followup_symbol = "<div class='chatlog__followup-symbol'></div>"
 
-            time = self.message.created_at
-            if not self.message.created_at.tzinfo:
-                time = timezone("UTC").localize(time)
+        time = self.message.created_at
+        if not self.message.created_at.tzinfo:
+            time = timezone("UTC").localize(time)
 
-            default_timestamp = time.astimezone(timezone(self.pytz_timezone)).strftime("%d-%m-%Y %H:%M")
+        default_timestamp = time.astimezone(timezone(self.pytz_timezone)).strftime("%d-%m-%Y %H:%M")
 
-            self.message_html += await fill_out(self.guild, start_message, [
-                ("REFERENCE_SYMBOL", followup_symbol, PARSE_MODE_NONE),
-                ("REFERENCE", self.message.reference if self.message.reference else self.message.interaction,
-                 PARSE_MODE_NONE),
-                ("AVATAR_URL", str(avatar_url), PARSE_MODE_NONE),
-                ("NAME_TAG", await discriminator(self.message.author.name, self.message.author.discriminator), PARSE_MODE_NONE),
-                ("USER_ID", str(self.message.author.id)),
-                ("USER_COLOUR", await self._gather_user_colour(self.message.author)),
-                ("USER_ICON", await self._gather_user_icon(self.message.author), PARSE_MODE_NONE),
-                ("NAME", str(html.escape(self.message.author.display_name))),
-                ("BOT_TAG", str(is_bot), PARSE_MODE_NONE),
-                ("TIMESTAMP", str(self.message_created_at)),
-                ("DEFAULT_TIMESTAMP", str(default_timestamp), PARSE_MODE_NONE),
-                ("MESSAGE_ID", str(self.message.id)),
-                ("MESSAGE_CONTENT", self.message.content, PARSE_MODE_NONE),
-                ("EMBEDS", self.embeds, PARSE_MODE_NONE),
-                ("ATTACHMENTS", self.attachments, PARSE_MODE_NONE),
-                ("COMPONENTS", self.components, PARSE_MODE_NONE),
-                ("EMOJI", self.reactions, PARSE_MODE_NONE)
-            ])
+        self.message_html += await fill_out(self.guild, start_message, [
+            ("REFERENCE_SYMBOL", followup_symbol, PARSE_MODE_NONE),
+            ("REFERENCE", self.message.reference if self.message.reference else self.message.interaction,
+             PARSE_MODE_NONE),
+            ("AVATAR_URL", str(avatar_url), PARSE_MODE_NONE),
+            ("NAME_TAG", await discriminator(self.message.author.name, self.message.author.discriminator), PARSE_MODE_NONE),
+            ("USER_ID", str(self.message.author.id)),
+            ("USER_COLOUR", await self._gather_user_colour(self.message.author)),
+            ("USER_ICON", await self._gather_user_icon(self.message.author), PARSE_MODE_NONE),
+            ("NAME", str(html.escape(self.message.author.display_name))),
+            ("BOT_TAG", str(is_bot), PARSE_MODE_NONE),
+            ("TIMESTAMP", str(self.message_created_at)),
+            ("DEFAULT_TIMESTAMP", str(default_timestamp), PARSE_MODE_NONE),
+            ("MESSAGE_ID", str(self.message.id)),
+            ("MESSAGE_CONTENT", self.message.content, PARSE_MODE_NONE),
+            ("EMBEDS", self.embeds, PARSE_MODE_NONE),
+            ("ATTACHMENTS", self.attachments, PARSE_MODE_NONE),
+            ("COMPONENTS", self.components, PARSE_MODE_NONE),
+            ("EMOJI", self.reactions, PARSE_MODE_NONE)
+        ])
 
-            return True
+        return True
 
     async def build_pin_template(self):
         self.message_html += await fill_out(self.guild, message_pin, [
@@ -383,9 +398,7 @@ class MessageConstruct:
         ])
 
     async def _gather_member(self, author: discord.Member):
-        member = self.guild.get_member(author.id)
-
-        if member:
+        if member := self.guild.get_member(author.id):
             return member
 
         try:
@@ -422,9 +435,6 @@ class MessageConstruct:
             time = timezone("UTC").localize(time)
 
         local_time = time.astimezone(timezone(self.pytz_timezone))
-
-        if self.military_time:
-            return local_time.strftime(self.time_format)
 
         return local_time.strftime(self.time_format)
 

@@ -47,54 +47,64 @@ def read_file(filename):
 
 
 # MESSAGES
-start_message = read_file(dir_path + "/html/message/start.html")
-bot_tag = read_file(dir_path + "/html/message/bot-tag.html")
-bot_tag_verified = read_file(dir_path + "/html/message/bot-tag-verified.html")
-message_content = read_file(dir_path + "/html/message/content.html")
-message_reference = read_file(dir_path + "/html/message/reference.html")
-message_interaction = read_file(dir_path + "/html/message/interaction.html")
-message_pin = read_file(dir_path + "/html/message/pin.html")
-message_thread = read_file(dir_path + "/html/message/thread.html")
-message_thread_remove = read_file(dir_path + "/html/message/thread_remove.html")
-message_thread_add = read_file(dir_path + "/html/message/thread_add.html")
-message_reference_unknown = read_file(dir_path + "/html/message/reference_unknown.html")
-message_body = read_file(dir_path + "/html/message/message.html")
-end_message = read_file(dir_path + "/html/message/end.html")
-meta_data_temp = read_file(dir_path + "/html/message/meta.html")
+start_message = read_file(f"{dir_path}/html/message/start.html")
+bot_tag = read_file(f"{dir_path}/html/message/bot-tag.html")
+bot_tag_verified = read_file(f"{dir_path}/html/message/bot-tag-verified.html")
+message_content = read_file(f"{dir_path}/html/message/content.html")
+message_reference = read_file(f"{dir_path}/html/message/reference.html")
+message_interaction = read_file(f"{dir_path}/html/message/interaction.html")
+message_pin = read_file(f"{dir_path}/html/message/pin.html")
+message_thread = read_file(f"{dir_path}/html/message/thread.html")
+message_thread_remove = read_file(
+    f"{dir_path}/html/message/thread_remove.html"
+)
+message_thread_add = read_file(f"{dir_path}/html/message/thread_add.html")
+message_reference_unknown = read_file(
+    f"{dir_path}/html/message/reference_unknown.html"
+)
+message_body = read_file(f"{dir_path}/html/message/message.html")
+end_message = read_file(f"{dir_path}/html/message/end.html")
+meta_data_temp = read_file(f"{dir_path}/html/message/meta.html")
 
 # COMPONENTS
-component_button = read_file(dir_path + "/html/component/component_button.html")
-component_menu = read_file(dir_path + "/html/component/component_menu.html")
-component_menu_options = read_file(dir_path + "/html/component/component_menu_options.html")
-component_menu_options_emoji = read_file(dir_path + "/html/component/component_menu_options_emoji.html")
+component_button = read_file(
+    f"{dir_path}/html/component/component_button.html"
+)
+component_menu = read_file(f"{dir_path}/html/component/component_menu.html")
+component_menu_options = read_file(
+    f"{dir_path}/html/component/component_menu_options.html"
+)
+component_menu_options_emoji = read_file(
+    f"{dir_path}/html/component/component_menu_options_emoji.html"
+)
 
 # EMBED
-embed_body = read_file(dir_path + "/html/embed/body.html")
-embed_title = read_file(dir_path + "/html/embed/title.html")
-embed_description = read_file(dir_path + "/html/embed/description.html")
-embed_field = read_file(dir_path + "/html/embed/field.html")
-embed_field_inline = read_file(dir_path + "/html/embed/field-inline.html")
-embed_footer = read_file(dir_path + "/html/embed/footer.html")
-embed_footer_icon = read_file(dir_path + "/html/embed/footer_image.html")
-embed_image = read_file(dir_path + "/html/embed/image.html")
-embed_thumbnail = read_file(dir_path + "/html/embed/thumbnail.html")
-embed_author = read_file(dir_path + "/html/embed/author.html")
-embed_author_icon = read_file(dir_path + "/html/embed/author_icon.html")
+embed_body = read_file(f"{dir_path}/html/embed/body.html")
+embed_title = read_file(f"{dir_path}/html/embed/title.html")
+embed_description = read_file(f"{dir_path}/html/embed/description.html")
+embed_field = read_file(f"{dir_path}/html/embed/field.html")
+embed_field_inline = read_file(f"{dir_path}/html/embed/field-inline.html")
+embed_footer = read_file(f"{dir_path}/html/embed/footer.html")
+embed_footer_icon = read_file(f"{dir_path}/html/embed/footer_image.html")
+embed_image = read_file(f"{dir_path}/html/embed/image.html")
+embed_thumbnail = read_file(f"{dir_path}/html/embed/thumbnail.html")
+embed_author = read_file(f"{dir_path}/html/embed/author.html")
+embed_author_icon = read_file(f"{dir_path}/html/embed/author_icon.html")
 
 # REACTION
-emoji = read_file(dir_path + "/html/reaction/emoji.html")
-custom_emoji = read_file(dir_path + "/html/reaction/custom_emoji.html")
+emoji = read_file(f"{dir_path}/html/reaction/emoji.html")
+custom_emoji = read_file(f"{dir_path}/html/reaction/custom_emoji.html")
 
 # ATTACHMENT
-img_attachment = read_file(dir_path + "/html/attachment/image.html")
-msg_attachment = read_file(dir_path + "/html/attachment/message.html")
-audio_attachment = read_file(dir_path + "/html/attachment/audio.html")
-video_attachment = read_file(dir_path + "/html/attachment/video.html")
+img_attachment = read_file(f"{dir_path}/html/attachment/image.html")
+msg_attachment = read_file(f"{dir_path}/html/attachment/message.html")
+audio_attachment = read_file(f"{dir_path}/html/attachment/audio.html")
+video_attachment = read_file(f"{dir_path}/html/attachment/video.html")
 
 # GUILD / FULL TRANSCRIPT
-total = read_file(dir_path + "/html/base.html")
+total = read_file(f"{dir_path}/html/base.html")
 
 # SCRIPT
-fancy_time = read_file(dir_path + "/html/script/fancy_time.html")
-channel_topic = read_file(dir_path + "/html/script/channel_topic.html")
-channel_subject = read_file(dir_path + "/html/script/channel_subject.html")
+fancy_time = read_file(f"{dir_path}/html/script/fancy_time.html")
+channel_topic = read_file(f"{dir_path}/html/script/channel_topic.html")
+channel_subject = read_file(f"{dir_path}/html/script/channel_subject.html")

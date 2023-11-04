@@ -167,4 +167,4 @@ async def link(
     :param message: discord.Message
     :return: string (link: https://mahto.id/chat-exporter?url=ATTACHMENT_URL)
     """
-    return "https://mahto.id/chat-exporter?url=" + message.attachments[0].url
+    return f"https://mahto.id/chat-exporter?url={message.attachments[0].url}"

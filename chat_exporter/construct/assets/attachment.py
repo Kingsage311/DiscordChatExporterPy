@@ -73,7 +73,7 @@ class Attachment:
         i = int(math.floor(math.log(file_size, 1024)))
         p = math.pow(1024, i)
         s = round(file_size / p, 2)
-        return "%s %s" % (s, size_name[i])
+        return f"{s} {size_name[i]}"
 
     async def get_file_icon(self) -> str:
         acrobat_types = "pdf"

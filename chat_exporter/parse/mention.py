@@ -56,10 +56,7 @@ class ParseMention:
         return self.content
 
     async def escape_mentions(self):
-        for match in re.finditer("(%s|%s|%s|%s|%s|%s|%s|%s)"
-                                 % (self.REGEX_ROLES, self.REGEX_MEMBERS, self.REGEX_CHANNELS, self.REGEX_EMOJIS,
-                                    self.REGEX_ROLES_2, self.REGEX_MEMBERS_2, self.REGEX_CHANNELS_2,
-                                    self.REGEX_EMOJIS_2), self.content):
+        for match in re.finditer(f"({self.REGEX_ROLES}|{self.REGEX_MEMBERS}|{self.REGEX_CHANNELS}|{self.REGEX_EMOJIS}|{self.REGEX_ROLES_2}|{self.REGEX_MEMBERS_2}|{self.REGEX_CHANNELS_2}|{self.REGEX_EMOJIS_2})", self.content):
             pre_content = self.content[:match.start()]
             post_content = self.content[match.end():]
             match_content = self.content[match.start():match.end()]
@@ -74,7 +71,6 @@ class ParseMention:
         self.content = self.content.replace(self.ESCAPE_LT, "<")
         self.content = self.content.replace(self.ESCAPE_GT, ">")
         self.content = self.content.replace(self.ESCAPE_AMP, "&")
-        pass
 
     async def channel_mention(self):
         holder = self.REGEX_CHANNELS, self.REGEX_CHANNELS_2
@@ -87,8 +83,7 @@ class ParseMention:
                 if channel is None:
                     replacement = '#deleted-channel'
                 else:
-                    replacement = '<span class="mention" title="%s">#%s</span>' \
-                                  % (channel.id, channel.name)
+                    replacement = f'<span class="mention" title="{channel.id}">#{channel.name}</span>'
                 self.content = self.content.replace(self.content[match.start():match.end()], replacement)
 
                 match = re.search(regex, self.content)
@@ -108,8 +103,7 @@ class ParseMention:
                         colour = "#dee0fc"
                     else:
                         colour = "#%02x%02x%02x" % (role.color.r, role.color.g, role.color.b)
-                    replacement = '<span style="color: %s;">@%s</span>' \
-                                  % (colour, role.name)
+                    replacement = f'<span style="color: {colour};">@{role.name}</span>'
                 self.content = self.content.replace(self.content[match.start():match.end()], replacement)
 
                 match = re.search(regex, self.content)
@@ -129,11 +123,9 @@ class ParseMention:
                     member_name = member
 
                 if member is not None:
-                    replacement = '<span class="mention" title="%s">@%s</span>' \
-                                  % (str(member_id), str(member_name))
+                    replacement = f'<span class="mention" title="{member_id}">@{str(member_name)}</span>'
                 else:
-                    replacement = '<span class="mention" title="%s">&lt;@%s></span>' \
-                                  % (str(member_id), str(member_id))
+                    replacement = f'<span class="mention" title="{member_id}">&lt;@{member_id}></span>'
                 self.content = self.content.replace(self.content[match.start():match.end()],
                                                     replacement)
 
